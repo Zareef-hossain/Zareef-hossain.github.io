@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+/* Design tokens — expanded in M1 (fonts, type scale, components). */
+@theme {
+  --color-bg: #ffffff;
+  --color-surface: #f7f9fc;
+  --color-ink: #0b1b33;
+  --color-ink-body: #2a3a55;
+  --color-ink-muted: #5b6b85;
+  --color-line: #e3e8f0;
+  --color-accent: #0e7490;
+  --color-accent-soft: #ecfeff;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-bg text-ink-body antialiased;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}

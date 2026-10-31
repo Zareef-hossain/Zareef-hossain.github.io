@@ -1,0 +1,3 @@
+# Indexing is disabled until launch (M8). Switch to "Allow: /" then.
+User-agent: *
+Disallow: /
