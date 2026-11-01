@@ -4,7 +4,8 @@
 // - `null` means "not known yet": the field is omitted in production and flagged in development.
 // - Empty arrays mean "nothing provided yet" for list fields (contributions, tags, ...).
 // - There are deliberately NO fields for phone numbers, home addresses, dates of birth,
-//   student IDs, grades/CGPA or referee contacts. Do not add them.
+//   student IDs, grades/CGPA or referee contacts. Do not add them. (The owner explicitly
+//   approved publishing the student email address in `profile.emails`.)
 // - Dates are partial ISO strings: "YYYY" or "YYYY-MM" (validated by scripts/check-content.ts).
 
 export type Maybe<T> = T | null
@@ -19,6 +20,9 @@ export interface Image {
   src: PublicPath
   /** Describes the image for screen readers; required for every image. */
   alt: string
+  /** Intrinsic pixel size; reserves layout space before the file loads. */
+  width: number
+  height: number
 }
 
 export interface Period {
@@ -34,6 +38,7 @@ export interface ProfileLinks {
   linkedin: string
   orcid: Maybe<string>
   scholar: Maybe<string>
+  facebook: Maybe<string>
 }
 
 export interface Profile {
@@ -44,13 +49,18 @@ export interface Profile {
   headline: Maybe<string>
   /** About Me paragraphs. */
   bio: Maybe<readonly string[]>
+  /** Owner-approved statement about the opportunities sought (Contact section). */
+  opportunityStatement: Maybe<string>
   location: Maybe<string>
-  /** Public contact email. Owner decision: none is published (keep null). */
-  email: Maybe<string>
+  /** Owner-approved public email addresses, in display order. */
+  emails: readonly string[]
   links: ProfileLinks
   /** Downloadable CV — only an owner-approved, redacted file in `public/cv/`. */
   cv: Maybe<{ path: PublicPath; label: string }>
+  /** Main portrait (Hero). */
   photo: Maybe<Image>
+  /** Secondary photo (About). */
+  aboutPhoto: Maybe<Image>
 }
 
 // ---------------------------------------------------------------- Research
@@ -59,6 +69,11 @@ export interface ResearchInterest {
   id: string
   title: string
   summary: Maybe<string>
+  /**
+   * Publications on a related topic (ids from publications.ts). A topical association only —
+   * not a claim about methods used or publication status.
+   */
+  relatedPublicationIds?: readonly string[]
 }
 
 export type PublicationStatus = 'published' | 'accepted' | 'under-review' | 'in-preparation'
@@ -87,8 +102,15 @@ export interface Publication {
   authors: Maybe<readonly Author[]>
   venue: Maybe<string>
   venueType: Maybe<VenueType>
+  /** Where the venue took place, as the owner gave it (e.g. "IUBAT, Dhaka"). */
+  venueLocation: Maybe<string>
   year: Maybe<number>
+  /** Conference dates as display text, when known (e.g. "04–05 September 2026"). */
+  eventDates: Maybe<string>
+  /** Only set when the owner confirms it; no badge is shown while null. */
   status: Maybe<PublicationStatus>
+  /** Short factual description from owner-confirmed material. Not the paper's abstract. */
+  summary: Maybe<string>
   abstract: Maybe<string>
   methodology: Maybe<string>
   /** The owner's individual contributions only. */
@@ -116,8 +138,12 @@ export type Repository =
 export interface Project {
   id: string
   title: string
+  /** Short qualifier shown under the title, e.g. "Academic Software Engineering Project". */
+  context: Maybe<string>
   summary: Maybe<string>
   description: Maybe<string>
+  /** What the project covers (features, scope). Not attributed to any individual. */
+  highlights: readonly string[]
   period: Maybe<Period>
   role: Maybe<string>
   teamSize: Maybe<number>
@@ -152,6 +178,14 @@ export interface Achievement {
   evidenceUrl: Maybe<string>
 }
 
+export interface Volunteering {
+  id: string
+  role: string
+  organization: string
+  period: Maybe<Period>
+  description: Maybe<string>
+}
+
 // ---------------------------------------------------------------- Skills
 
 export interface SkillGroup {
@@ -169,6 +203,11 @@ export interface Education {
   degree: string
   location: Maybe<string>
   period: Maybe<Period>
+  /**
+   * True while `period.end` is an expected completion date. Only the owner sets it to false,
+   * once completion is confirmed — the UI never infers it from the current date.
+   */
+  expected: boolean
   /** Grades/CGPA are intentionally not part of the schema (owner decision). */
   highlights: readonly string[]
 }

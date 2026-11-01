@@ -6,7 +6,7 @@
 //   Fails the content check and therefore the build.
 // - 'gap'   — information not provided yet (null fields, empty lists). Reported, never fatal.
 
-import { achievements } from './achievements.ts'
+import { achievements, volunteering } from './achievements.ts'
 import { education, training } from './education.ts'
 import { profile } from './profile.ts'
 import { projects } from './projects.ts'
@@ -98,27 +98,36 @@ export function validateContent(options: ValidateOptions = {}): ContentIssue[] {
   {
     const s = 'about'
     const r = 'Profile'
-    gaps(s, r, profile, ['headline', 'bio', 'location', 'photo', 'cv'])
-    gaps(s, r, profile.links, ['orcid', 'scholar'])
-    // profile.email is intentionally null (owner decision) and is not a gap.
-    url(s, r, 'links.github', profile.links.github)
-    url(s, r, 'links.linkedin', profile.links.linkedin)
-    url(s, r, 'links.orcid', profile.links.orcid)
-    url(s, r, 'links.scholar', profile.links.scholar)
+    gaps(s, r, profile, ['headline', 'bio', 'opportunityStatement', 'photo', 'aboutPhoto', 'cv'])
+    for (const [field, value] of Object.entries(profile.links)) url(s, r, `links.${field}`, value)
+    for (const email of profile.emails) {
+      if (!/^[^\s@?&]+@[^\s@?&]+\.[a-z]{2,}$/i.test(email)) add('error', 'contact', r, 'emails', `invalid email address: ${email}`)
+    }
+    if (profile.emails.length === 0) add('gap', 'contact', r, 'emails', 'not provided yet')
     file(s, r, 'cv', profile.cv?.path ?? null)
     file(s, r, 'photo', profile.photo?.src ?? null)
+    file(s, r, 'aboutPhoto', profile.aboutPhoto?.src ?? null)
   }
 
   // ---------------------------------------------------------------- Research interests
   ids('research', researchInterests)
   emptyCollection('research', 'Research interests', researchInterests)
-  for (const item of researchInterests) gaps('research', item.title, item, ['summary'])
+  for (const item of researchInterests) {
+    gaps('research', item.title, item, ['summary'])
+    const related = item.relatedPublicationIds ?? []
+    if (new Set(related).size !== related.length) add('error', 'research', item.title, 'relatedPublicationIds', 'duplicate id')
+    for (const id of related) {
+      if (!publications.some((p) => p.id === id)) {
+        add('error', 'research', item.title, 'relatedPublicationIds', `no publication with id "${id}"`)
+      }
+    }
+  }
 
   // ---------------------------------------------------------------- Publications
   ids('publications', publications)
   for (const pub of publications) {
     const s = 'publications'
-    gaps(s, pub.title, pub, ['authors', 'venue', 'venueType', 'year', 'status', 'abstract', 'methodology', 'myContributions'])
+    gaps(s, pub.title, pub, ['authors', 'venue', 'venueType', 'year', 'summary'])
     if (pub.doi === null && pub.officialUrl === null) add('gap', s, pub.title, 'doi/officialUrl', 'no DOI or official link yet')
     if (pub.pdf === null) add('gap', s, pub.title, 'pdf', 'not provided (requires owner permission)')
     if (pub.doi !== null && !DOI_PATTERN.test(pub.doi)) add('error', s, pub.title, 'doi', `expected a bare DOI like 10.xxxx/...: ${pub.doi}`)
@@ -142,7 +151,7 @@ export function validateContent(options: ValidateOptions = {}): ContentIssue[] {
   for (const project of projects) {
     const s = 'projects'
     const r = project.title
-    gaps(s, r, project, ['summary', 'description', 'period', 'role', 'teamSize', 'myContributions', 'techStack'])
+    gaps(s, r, project, ['summary', 'highlights', 'role', 'myContributions'])
     if (project.repo.visibility === 'unknown') add('gap', s, r, 'repo', 'visibility not confirmed (public/private)')
     if (project.repo.visibility !== 'public' && 'url' in project.repo) add('error', s, r, 'repo', 'non-public repository must not have a URL')
     if (project.repo.visibility === 'public') url(s, r, 'repo.url', project.repo.url)
@@ -170,12 +179,20 @@ export function validateContent(options: ValidateOptions = {}): ContentIssue[] {
   for (const item of achievements) {
     const s = 'achievements'
     const r = `${item.title} — ${item.event}`
-    gaps(s, r, item, ['date', 'location', 'description', 'role', 'evidenceUrl'])
+    gaps(s, r, item, ['description', 'evidenceUrl'])
     year(s, r, 'year', item.year)
     date(s, r, 'date', item.date)
     url(s, r, 'evidenceUrl', item.evidenceUrl)
     if (item.relatedProjectId !== null && !projects.some((p) => p.id === item.relatedProjectId)) {
       add('error', s, r, 'relatedProjectId', `no project with id "${item.relatedProjectId}"`)
+    }
+  }
+
+  ids('achievements', volunteering)
+  for (const item of volunteering) {
+    if (item.period) {
+      date('achievements', item.role, 'period.start', item.period.start)
+      date('achievements', item.role, 'period.end', item.period.end)
     }
   }
 
@@ -189,8 +206,9 @@ export function validateContent(options: ValidateOptions = {}): ContentIssue[] {
   // ---------------------------------------------------------------- Education & training
   ids('education', [...education, ...training])
   for (const item of education) {
-    gaps('education', item.degree, item, ['location', 'period'])
+    gaps('education', item.degree, item, ['period'])
     if (item.period) {
+      if (item.expected) gaps('education', item.degree, item.period, ['start'])
       date('education', item.degree, 'period.start', item.period.start)
       date('education', item.degree, 'period.end', item.period.end)
     }
@@ -203,13 +221,13 @@ export function validateContent(options: ValidateOptions = {}): ContentIssue[] {
   }
 
   // ---------------------------------------------------------------- Privacy scan
-  // Rejects phone numbers, email addresses (other than an approved profile.email) and
+  // Rejects phone numbers, email addresses (other than the approved profile.emails) and
   // grade terms anywhere in content. URLs are skipped: IDs in them look like numbers.
-  const collections = { profile, researchInterests, publications, projects, achievements, skillGroups, education, training }
+  const collections = { profile, researchInterests, publications, projects, achievements, volunteering, skillGroups, education, training }
   for (const [name, value] of Object.entries(collections)) {
     for (const [path, text] of strings(value, name)) {
       if (/^https?:\/\//.test(text) || text.startsWith('/')) continue
-      if (text === profile.email) continue
+      if (profile.emails.includes(text)) continue
       if (EMAIL_PATTERN.test(text)) add('error', 'privacy', path, 'text', 'looks like an email address')
       else if (PHONE_PATTERN.test(text)) add('error', 'privacy', path, 'text', 'looks like a phone number')
       if (GRADE_PATTERN.test(text)) add('error', 'privacy', path, 'text', 'grades/CGPA must not be published')

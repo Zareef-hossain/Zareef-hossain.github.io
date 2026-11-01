@@ -147,7 +147,7 @@ export function Navbar() {
                             isActive ? 'text-accent' : 'text-ink hover:text-accent',
                           )}
                         >
-                          <span aria-hidden="true" className="w-6 font-mono text-meta text-ink-muted">
+                          <span aria-hidden="true" className="w-6 shrink-0 font-mono text-meta text-ink-muted">
                             {String(index + 1).padStart(2, '0')}
                           </span>
                           {item.title}
