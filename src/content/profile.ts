@@ -1,12 +1,20 @@
-// Single source of truth for profile details. Only facts confirmed by the owner;
-// unknown values stay null (never invent content). Full schema arrives in M2.
-export const profile = {
+import type { Profile } from './types.ts'
+
+// Only owner-confirmed facts. Unknown values stay null (never invent content).
+export const profile: Profile = {
   name: 'Ifreet Zareef Hossain',
   degree: 'B.Sc. in Computer Science and Engineering',
   institution: 'American International University-Bangladesh (AIUB)',
+  headline: null,
+  bio: null,
+  location: null,
+  email: null, // Owner decision: no public email.
   links: {
     github: 'https://github.com/Zareef-hossain',
     linkedin: 'https://www.linkedin.com/in/ifreet-zareef-hossain-9838b2231/',
+    orcid: null,
+    scholar: null,
   },
-  email: null as string | null, // Pending owner confirmation of public email.
-} as const
+  cv: null,
+  photo: null,
+}

@@ -1,5 +1,6 @@
 import { LazyMotion, MotionConfig, domAnimation } from 'motion/react'
 import { sectionNumber, sections } from './content/navigation.ts'
+import { ContentGaps } from './components/dev/ContentGaps.tsx'
 import { Footer } from './components/layout/Footer.tsx'
 import { Navbar } from './components/layout/Navbar.tsx'
 import { PendingContent } from './components/layout/PendingContent.tsx'
@@ -22,6 +23,7 @@ export default function App() {
           {sections.map((section) => (
             <Section key={section.id} id={section.id} number={sectionNumber(section.id)} title={section.title}>
               <PendingContent />
+              {import.meta.env.DEV && <ContentGaps section={section.id} />}
             </Section>
           ))}
           {import.meta.env.DEV && <StyleGuide />}

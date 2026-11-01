@@ -11,4 +11,4 @@ npm run build     # production build → dist/
 npm run preview   # serve the production build
 ```
 
-Portfolio content lives in `src/content/`. See `CLAUDE.md` for architecture, conventions and roadmap.
+Portfolio content lives in `src/content/`. See `INFORMATION.md` for architecture, conventions and roadmap.

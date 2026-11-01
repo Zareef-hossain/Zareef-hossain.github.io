@@ -1,7 +1,8 @@
-# CLAUDE.md — Research & Engineering Portfolio
+# Research & Engineering Portfolio — Project Information
 
-Project memory for Claude Code sessions. Read fully before making changes, and update it
-after every milestone or significant decision. Do not rely on prior conversation history.
+Project reference for everyone working on this repository. Read it fully before making changes,
+and update it after every milestone or significant decision. It is meant to be self-contained:
+it should not depend on knowledge kept anywhere else.
 Commit status is not tracked here — **git history (`git log`, `git status`) is the source of truth.**
 
 Status markers used below: **[implemented]** exists in the code now · **[planned Mx]** not built
@@ -26,13 +27,21 @@ International University-Bangladesh). Audiences, in priority order:
 - **Never invent** research findings, publication links/DOIs, venues, years, abstracts, metrics,
   project contributions, skills, or award details. Unknown → `null` in the content files.
 - **Never fabricate links.** A DOI/URL is added only when the owner supplies it.
-- **Never expose private repository source code.** Projects with private repos must show a
-  "Source private" badge and no repo link [planned M5].
-- **Separate personal vs team contributions** (`myContributions` vs `teamContributions`) [planned M2/M5].
-- **No confidential/personal data**: no phone, home address, student ID, or unpublished paper
-  drafts. Email is shown only after the owner confirms which address (`profile.email` is `null`).
+- **Never expose private repository source code.** Private repos never get a URL — enforced by
+  the `Repository` type and the content check [implemented]; a "Source private" badge in the
+  project UI [planned M5].
+- **Separate personal vs team contributions** (`myContributions` vs `teamContributions`) —
+  schema [implemented]; project UI [planned M5].
+- **No confidential/personal data**: no phone, home address, student ID, referee contacts, or
+  unpublished paper drafts. The schema has no fields for them, and the content check rejects
+  phone- and email-like text [implemented].
+- **No public email** (owner decision): `profile.email` stays `null`.
+- **No CGPA/grades** in public content (owner decision): no schema field; the check rejects them.
+- **The owner's CV PDF is never copied into the repo.** Only facts the owner confirms are added;
+  a downloadable CV requires an owner-approved, redacted file.
 - **Paper PDFs** go in `public/papers/` only if the owner confirms the publisher permits it
   (usually the accepted manuscript, not the publisher's final version). Otherwise link the DOI.
+  The `PublicationPdf` type requires `permissionConfirmed: true` [implemented].
 - **Unpublished research** stays out of the repo. `private/` and `drafts/` are git-ignored.
 - **Placeholders:** temporary placeholder UI (currently `PendingContent`, "This section is being
   prepared.") is allowed during development and pre-launch builds, but **must be removed before
@@ -45,8 +54,8 @@ International University-Bangladesh). Audiences, in priority order:
 ### 2.2 Git & repository safety
 
 - **Never** `git push`, deploy, or publish without explicit owner approval.
-- **Commit only when asked**, using the owner's exact commit message. No `Co-Authored-By: Claude`
-  trailer (owner preference).
+- **Commit only when asked**, using the owner's exact commit message. No co-author or
+  tool-attribution trailers (owner preference).
 - **Never** amend, reset, rebase, pull, force-push, or otherwise rewrite history without explicit
   approval.
 - **Before any commit:** run `git status` and `git diff --check`, review every file to be
@@ -92,12 +101,15 @@ src/
   App.tsx                      # LazyMotion + MotionConfig, page composition
   styles/index.css             # Tailwind import, fonts, @theme tokens, base styles
   content/                     # portfolio content (see §9)
-    profile.ts                 # name, degree, institution, links, email (null)
+    types.ts                   # schemas for all content (privacy guards built into types)
+    profile.ts                 # name, degree, institution, links; unknowns null
     navigation.ts              # section ids, nav labels, section titles, order/numbering
-    types.ts researchInterests.ts publications.ts projects.ts   # [planned M2]
-    achievements.ts skills.ts education.ts         # [planned M2]
+    researchInterests.ts publications.ts projects.ts
+    achievements.ts skills.ts education.ts   # education + training
+    validation.ts              # shared validator (CLI + dev UI); errors vs gaps
   components/
     icons/BrandIcons.tsx       # GitHub + LinkedIn SVGs (lucide-static@0.468.0, ISC)
+    dev/ContentGaps.tsx        # DEV ONLY per-section list of content gaps/errors
     layout/
       Container.tsx            # max-w-page + gutters
       Section.tsx              # numbered editorial section (sticky title column on lg)
@@ -110,6 +122,7 @@ src/
       Badge.tsx                # neutral/accent/outline mono label
       Card.tsx                 # bordered surface; as=, interactive, flush
       IconLink.tsx             # 44px icon-only link with sr-only label
+      MissingField.tsx         # DEV ONLY "Missing: <field>" chip; renders nothing in prod
     cards/                     # [planned M4–M6] PublicationCard, ProjectCard, ...
   hooks/
     useActiveSection.ts        # IntersectionObserver scroll-spy (+ bottom-of-page rule)
@@ -120,7 +133,7 @@ src/
   sections/
     Hero.tsx                   # #home — confirmed facts only (bio etc. in M3)
     StyleGuide.tsx             # DEV ONLY design-system reference (stripped from prod)
-scripts/check-content.ts       # [planned M2] reports null/missing fields
+scripts/check-content.ts       # content validation CLI (runs in npm run build)
 ```
 
 ## 5. Architecture decisions
@@ -130,11 +143,26 @@ Specs live in §6 (design) and §7 (conventions); this section records *why*.
 - **Single page, anchored sections, no router** [implemented]. Avoids GitHub Pages SPA 404 hacks.
   Nav links use `#id`. Publication/project detail will expand inline [planned M4/M5]. If
   per-paper URLs are ever needed, add a hash router — don't introduce server-style routes.
-- **Content separated from components** [partially implemented: `profile.ts`, `navigation.ts`].
-  Portfolio content (facts about the owner, research, projects) must come from `src/content/`.
-  Generic UI labels ("Skip to content", "Back to top", button text) may live in components.
-- **Missing-content strategy:** unknown = `null`, omitted from the production page
-  [rule, applies now]. A dev-only dashed "Missing: <field>" chip [planned M2].
+- **Content separated from components** [implemented]. Portfolio content (facts about the
+  owner, research, projects) must come from typed files in `src/content/`. Generic UI labels
+  ("Skip to content", "Back to top", button text) may live in components.
+- **Missing-content strategy** [implemented]: unknown = `null` (or `[]` for lists), omitted in
+  production. In dev, `ContentGaps` lists each section's gaps under its placeholder using
+  `MissingField` chips; both are behind `import.meta.env.DEV` and verified absent from the
+  production bundle. Section UIs (M3–M6) should use `MissingField` for null fields.
+- **Privacy enforced in two layers** [implemented]: (1) types — `Repository` forbids a URL unless
+  public; `PublicationPdf` requires `permissionConfirmed: true` and a `/papers/*.pdf` path; no
+  schema fields for phone/address/grades; (2) `validateContent()` — rejects phone/email-like
+  text and grade terms anywhere in content.
+- **One validator, two consumers** [implemented]: `src/content/validation.ts` is pure TS (no
+  DOM/Node APIs). `scripts/check-content.ts` adds file-existence checks via `node:fs`; the dev UI
+  skips those. Severity `error` (invalid links/DOIs/dates/years, duplicate ids, broken or
+  non-reciprocal cross-links, missing files, private data) fails the build; `gap` (not provided
+  yet) never does. Cross-links between publications and projects must be reciprocal.
+- **No script dependencies** [implemented]: Node 24 (local and CI) runs `.ts` directly (type
+  stripping, verified), which requires erasable-only syntax (`erasableSyntaxOnly` is on). Older
+  Node 22 releases inside the `engines` range (≥ 22.12) may need a flag — unverified. `scripts/` is
+  type-checked via `tsconfig.node.json` (ES2023 lib — avoid ES2024 APIs like `Map.groupBy`).
 - **Indexing discouraged until launch** [implemented]: `<meta name="robots" content="noindex">`
   in `index.html` and `Disallow: /` in `public/robots.txt`. Remove both at M8. (Not a privacy
   control — see §2.1.)
@@ -159,7 +187,8 @@ Specs live in §6 (design) and §7 (conventions); this section records *why*.
   (4rem) on `:root` drives header height and panel offset.
 - **Dev-only style guide** [implemented]: `{import.meta.env.DEV && <StyleGuide />}` — verified
   absent from the production bundle. For reviewing components; never put real content there.
-- **Shock-Sense placement** — see §12 (pending owner decision).
+- **Shock-Sense in both Publications and Projects** (owner decision): both records use id
+  `shock-sense` and link to each other (`relatedProjectId` ↔ `relatedPublicationId`).
 
 ## 6. Design system [implemented]
 
@@ -245,23 +274,18 @@ Anchor ids come from `src/content/navigation.ts` (`homeId` and `sections`).
 Status: Home has a foundation hero [implemented]; sections 1–8 are shells showing
 `PendingContent` [implemented, temporary] until M3–M6.
 
-Known content (owner-confirmed). Move into the content files at M2, then replace this list with
-a pointer to `src/content/`:
-- Publications (titles only so far): *Shock-Sense: A Low-Cost Rule-Based Physiological Monitoring
-  System for Early Hemorrhagic Shock Risk Detection*; *Public Awareness and Expectations of
-  Accelerated Reliable MRI Imaging Using Machine Learning*; *Machine Learning in Bangladesh's
-  Primary Education*.
-- Projects (names only): Shock-Sense; Reroute Agro; University Management System Backend
-  Software; Airline Management System Backend Software; Event Planning and Vendor Management System.
-- Achievement: Hackathon Runner-up — Hack for Humanity: Hack to Protect the Environment,
-  Powered by AI Collective (2026).
+Owner-confirmed content lives in `src/content/` (3 publication titles, 5 project names, 1
+achievement, AIUB degree). Run `npm run check:content` for the current list of gaps.
 
 ## 9. Content management
 
-- Now: `src/content/profile.ts` and `src/content/navigation.ts` [implemented].
-- Typed schemas (`types.ts`) and one file per section exporting typed arrays/objects [planned M2].
-- Add assets to `public/` (`papers/`, `cv/`, `images/`) and reference them as `/papers/x.pdf`.
-- Leave unknown fields `null`. A content check script listing the gaps [planned M2].
+- Edit the typed files in `src/content/` [implemented]; schemas are in `types.ts`. TypeScript
+  rejects wrong shapes; `npm run check:content` rejects invalid or unsafe values.
+- Leave unknown facts `null` (lists `[]`). Never fill a field with a guess or placeholder text.
+- Add assets to `public/` (`papers/`, `cv/`, `images/`) and reference them as `/papers/x.pdf`;
+  the content check verifies the files exist.
+- Ids are lowercase-kebab-case and unique per collection. When linking a publication and a
+  project, set both `relatedProjectId` and `relatedPublicationId`.
 
 ## 10. Commands, QA & deployment
 
@@ -269,8 +293,9 @@ a pointer to `src/content/`:
 npm install          # first time (dependency changes need owner approval)
 npm run dev          # local dev server, this PC only — default (includes DEV-only style guide)
 npm run dev:lan      # dev server on all interfaces (0.0.0.0) for phone preview on same Wi-Fi
-npm run typecheck    # tsc -b
-npm run build        # tsc -b && vite build → dist/
+npm run typecheck    # tsc -b (app, vite config and scripts/)
+npm run check:content  # validate content: errors exit 1, gaps are reported only
+npm run build        # tsc -b && check:content && vite build → dist/
 npm run preview      # serve dist/ locally
 ```
 
@@ -280,16 +305,17 @@ settings. Use it only on trusted networks, prefer `npm run dev` by default, and 
 when finished. The LAN URL is printed as "Network:" by Vite (the IP can change between
 connections).
 
-QA (M1 approach): a throwaway puppeteer-core script driving the installed Chrome, kept in the
-session's temporary scratchpad — **not in the repo and not available to future sessions**; no
+QA (M1 approach): a throwaway puppeteer-core script driving the installed Chrome, kept in a
+temporary folder outside the repository — **not in the repo and not available for reuse**; no
 test dependency was added. It checked fonts, overflow at 1440/820/390/320px, nav scroll-spy,
 sticky-header offset, skip link, 44px targets, the mobile menu (open, focus, inert, scroll lock,
 Tab containment, Escape, link navigation, resize-close), reduced motion and console errors, plus
 screenshots. Re-create it when needed; consider Playwright as a real dev dependency in M7.
 
 Deployment (only with owner approval — see §2.2): a push to `main` triggers the workflow, which
-builds and deploys to Pages. PRs build only. One-time setup:
-**Settings → Pages → Build and deployment → Source: GitHub Actions**.
+builds and deploys to Pages. PRs build only. Pages source is set to
+**Settings → Pages → Build and deployment → Source: GitHub Actions** (configured by the owner on
+2026-11-01; must stay on GitHub Actions — "Deploy from a branch" would publish raw source).
 
 Workflow security [implemented]: top-level `permissions: contents: read`; deploy job alone gets
 `pages: write` + `id-token: write`; actions pinned to commit SHAs; `persist-credentials: false`;
@@ -301,13 +327,16 @@ update both the SHA and the trailing version comment.
 - [x] **M0 — Scaffold + CI** (2026-11-01): Vite/React/TS/Tailwind v4/Motion/Lucide set up;
   token stub; minimal placeholder page; brand icons; SHA-pinned Pages workflow; `.gitignore`;
   noindex; production build verified.
-- [x] **M1 — Design system & UI foundation** (2026-11-01, implemented; owner review pending):
+- [x] **M1 — Design system & UI foundation** (2026-11-01, implemented; approved by owner):
   self-hosted Source Serif 4 + Inter; full token set and type scale; Container, Section, Reveal,
   SkipLink, Navbar (scroll-spy, accessible mobile menu), Footer, SocialLinks; Button, Badge,
   Card, IconLink; LazyMotion; reduced-motion support; 8 section shells with `PendingContent`;
   dev-only StyleGuide; browser QA 34/34 passing. Post-M1: `dev:lan` script added.
-- [ ] **M2 — Content layer:** `types.ts` schemas, all content files with known facts + nulls,
-  `MissingField` chip, `scripts/check-content.ts`.
+- [x] **M2 — Typed content layer** (2026-11-01, implemented; owner review pending): schemas in
+  `types.ts` with type-level privacy guards; content files with owner-confirmed facts only
+  (unknowns null); shared `validateContent()`; `scripts/check-content.ts` wired into the build
+  (0 errors, 87 gaps at completion); dev-only `MissingField` + `ContentGaps`. Section UIs
+  still show `PendingContent`.
 - [ ] **M3 — Hero, About, Research Interests** (Hero foundation exists; add bio/focus line)
 - [ ] **M4 — Publications** (expandable cards, PDF/DOI handling)
 - [ ] **M5 — Projects** (my vs team contributions, private-repo badge)
@@ -319,12 +348,18 @@ update both the SHA and the trailing version comment.
 
 ## 12. Pending owner input
 
-Decisions [owner decision pending]:
-- Public email address.
-- PDF posting rights, per paper.
-- Shock-Sense shown in both Publications and Projects?
+Decided (2026-11-01): no public email; no CGPA in public content; Shock-Sense in both
+Publications and Projects with reciprocal links.
 
-Content still needed:
+Decisions [owner decision pending]:
+- PDF posting rights, per paper.
+- Whether under-review papers may be listed publicly (double-blind review policies).
+
+Owner actions completed (2026-11-01): GitHub Pages source switched from "Deploy from a branch"
+to **GitHub Actions**, and the deployment was completed by the owner (owner-reported; not
+independently re-verified in this document).
+
+Content still needed (the authoritative, current list is `npm run check:content`):
 - Profile photo, bio, location, CV PDF, ORCID / Google Scholar (if any).
 - Research interests (3–5 + one line each).
 - Per publication: venue, year, status, author list/order, abstract, methodology, own
@@ -332,4 +367,4 @@ Content still needed:
 - Per project: summary, dates, role, team size, my/team contributions, stack, repo URL +
   visibility, demo, screenshots.
 - Hackathon: date/location, what was built, role, certificate/announcement link.
-- Skills list; education dates, expected graduation, CGPA (optional), courses/certifications.
+- Skills list; education dates, expected graduation, courses/certifications.

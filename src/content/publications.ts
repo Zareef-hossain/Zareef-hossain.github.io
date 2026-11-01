@@ -1,0 +1,58 @@
+import type { Publication } from './types.ts'
+
+// Titles are owner-confirmed. Venue, year, status, authors, abstract, methodology,
+// contributions, DOI/links and PDFs are unknown until the owner provides them.
+export const publications: readonly Publication[] = [
+  {
+    id: 'shock-sense',
+    title:
+      'Shock-Sense: A Low-Cost Rule-Based Physiological Monitoring System for Early Hemorrhagic Shock Risk Detection',
+    authors: null,
+    venue: null,
+    venueType: null,
+    year: null,
+    status: null,
+    abstract: null,
+    methodology: null,
+    myContributions: [],
+    doi: null,
+    officialUrl: null,
+    pdf: null,
+    relatedProjectId: 'shock-sense', // Owner decision: shown in Publications and Projects.
+    tags: [],
+  },
+  {
+    id: 'mri-ml-public-awareness',
+    title: 'Public Awareness and Expectations of Accelerated Reliable MRI Imaging Using Machine Learning',
+    authors: null,
+    venue: null,
+    venueType: null,
+    year: null,
+    status: null,
+    abstract: null,
+    methodology: null,
+    myContributions: [],
+    doi: null,
+    officialUrl: null,
+    pdf: null,
+    relatedProjectId: null,
+    tags: [],
+  },
+  {
+    id: 'ml-bangladesh-primary-education',
+    title: "Machine Learning in Bangladesh's Primary Education",
+    authors: null,
+    venue: null,
+    venueType: null,
+    year: null,
+    status: null,
+    abstract: null,
+    methodology: null,
+    myContributions: [],
+    doi: null,
+    officialUrl: null,
+    pdf: null,
+    relatedProjectId: null,
+    tags: [],
+  },
+]

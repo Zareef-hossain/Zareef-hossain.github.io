@@ -33,5 +33,5 @@ desktop.ini
 private/
 drafts/
 
-# Claude Code local settings
+# Local development tool settings
 .claude/settings.local.json
