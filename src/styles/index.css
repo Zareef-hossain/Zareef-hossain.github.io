@@ -1,27 +1,103 @@
 @import "tailwindcss";
 
-/* Design tokens — expanded in M1 (fonts, type scale, components). */
+/* Self-hosted variable fonts (no third-party font requests).
+   Serif uses the optical-size axis so display and text sizes are each drawn optimally. */
+@import "@fontsource-variable/source-serif-4/opsz.css";
+@import "@fontsource-variable/inter/index.css";
+
 @theme {
+  /* Colour — white page, deep navy type, restrained cyan accent. */
   --color-bg: #ffffff;
   --color-surface: #f7f9fc;
   --color-ink: #0b1b33;
+  --color-ink-soft: #1a3156;
   --color-ink-body: #2a3a55;
   --color-ink-muted: #5b6b85;
   --color-line: #e3e8f0;
-  --color-accent: #0e7490;
+  --color-line-strong: #cbd4e1;
+  --color-accent: #0e7490; /* AA on white — never use a brighter cyan for text */
+  --color-accent-strong: #155e75;
   --color-accent-soft: #ecfeff;
+
+  /* Typography */
+  --font-serif: "Source Serif 4 Variable", ui-serif, Georgia, Cambria, serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", Menlo, Consolas, monospace;
+
+  /* Type scale (~1.25). Fluid sizes for display and section titles. */
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.5;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.7;
+  --text-lead: 1.25rem;
+  --text-lead--line-height: 1.6;
+  --text-heading: 1.375rem;
+  --text-heading--line-height: 1.35;
+  --text-title: clamp(1.875rem, 1.4rem + 1.6vw, 2.5rem);
+  --text-title--line-height: 1.2;
+  --text-display: clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem);
+  --text-display--line-height: 1.08;
+
+  /* Layout */
+  --container-page: 70rem; /* 1120px */
+  --container-prose: 45rem; /* ~68ch at body size */
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer base {
+  :root {
+    --header-height: 4rem;
+  }
+
   html {
     scroll-behavior: smooth;
+    /* Exactly the header height: the section's top border tucks under the header's own. */
+    scroll-padding-top: var(--header-height);
+    -webkit-text-size-adjust: 100%;
   }
+
   body {
-    @apply bg-bg text-ink-body antialiased;
+    @apply bg-bg font-sans text-body text-ink-body antialiased;
+    font-feature-settings: "ss01"; /* Inter: open digits */
+    text-rendering: optimizeLegibility;
   }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-serif text-ink;
+    font-optical-sizing: auto;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    @apply bg-accent-soft text-ink;
+  }
+
+  /* One focus style everywhere; only visible for keyboard users. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
     }
   }
 }
