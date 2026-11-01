@@ -72,7 +72,7 @@ export function About() {
   return (
     <div className="space-y-10">
       {profile.aboutPhoto ? (
-        <figure className="overflow-hidden rounded-lg border border-line bg-surface">
+        <figure className="overflow-hidden rounded-xl border border-line bg-surface shadow-card">
           <img
             src={profile.aboutPhoto.src}
             alt={profile.aboutPhoto.alt}

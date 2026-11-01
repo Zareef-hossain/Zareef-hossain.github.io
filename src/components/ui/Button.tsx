@@ -32,11 +32,12 @@ type NativeButtonProps = CommonProps &
 export type ButtonProps = LinkProps | NativeButtonProps
 
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-md font-medium whitespace-nowrap transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0'
+  'inline-flex items-center justify-center gap-2 rounded-md font-medium whitespace-nowrap transition-[color,background-color,border-color,box-shadow] duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0'
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-ink text-white hover:bg-ink-soft',
-  secondary: 'border border-line-strong bg-bg text-ink hover:border-accent hover:text-accent',
+  primary:
+    'bg-accent-fill text-on-accent shadow-[0_6px_16px_-8px_rgb(67_56_202/0.6)] hover:bg-accent-fill-hover hover:shadow-[0_8px_20px_-8px_rgb(67_56_202/0.7)]',
+  secondary: 'border border-line-strong bg-card text-ink hover:border-accent hover:text-accent',
   ghost: 'text-ink hover:bg-surface hover:text-accent',
 }
 

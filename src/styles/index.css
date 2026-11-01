@@ -5,19 +5,32 @@
 @import "@fontsource-variable/source-serif-4/opsz.css";
 @import "@fontsource-variable/inter/index.css";
 
+/* Dark theme: `dark:` utilities apply under <html data-theme="dark"> (set before first paint
+   by the inline script in index.html; see src/hooks/useTheme.ts). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
-  /* Colour — white page, deep navy type, restrained cyan accent. */
-  --color-bg: #ffffff;
-  --color-surface: #f7f9fc;
+  /* Colour (light) — warm off-white page, deep navy type, indigo accent with a violet partner.
+     Dark values are redefined on [data-theme="dark"] below; utilities read the variables. */
+  --color-bg: #fbfaf7;
+  --color-surface: #f3f2ee;
+  --color-card: #ffffff;
   --color-ink: #0b1b33;
   --color-ink-soft: #1a3156;
   --color-ink-body: #2a3a55;
-  --color-ink-muted: #5b6b85;
-  --color-line: #e3e8f0;
-  --color-line-strong: #cbd4e1;
-  --color-accent: #0e7490; /* AA on white — never use a brighter cyan for text */
-  --color-accent-strong: #155e75;
-  --color-accent-soft: #ecfeff;
+  --color-ink-muted: #56647c;
+  --color-line: #e5e3dd;
+  --color-line-strong: #cfccc4;
+  --color-accent: #4338ca; /* indigo — AA as text on bg, card and accent-soft */
+  --color-accent-strong: #3730a3;
+  --color-accent-soft: #eef0ff;
+  --color-violet: #6d28d9;
+  /* Solid fill for primary buttons (white text ≥ 6:1 in both themes). */
+  --color-accent-fill: #4338ca;
+  --color-accent-fill-hover: #3730a3;
+  --color-on-accent: #ffffff;
+  --shadow-card: 0 1px 2px rgb(11 27 51 / 0.04), 0 4px 16px -8px rgb(11 27 51 / 0.08);
+  --shadow-card-hover: 0 2px 4px rgb(11 27 51 / 0.05), 0 16px 32px -16px rgb(67 56 202 / 0.22);
 
   /* Typography */
   --font-serif: "Source Serif 4 Variable", ui-serif, Georgia, Cambria, serif;
@@ -49,6 +62,30 @@
 @layer base {
   :root {
     --header-height: 4rem;
+    color-scheme: light;
+  }
+
+  /* Dark theme — deep navy surfaces, light type, softened indigo/violet accents. All text
+     pairs below meet WCAG AA (≥ 4.5:1) on bg, surface and card. */
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-bg: #0a1020;
+    --color-surface: #0e1528;
+    --color-card: #131c33;
+    --color-ink: #eef2fa;
+    --color-ink-soft: #d5ddec;
+    --color-ink-body: #c3cce0;
+    --color-ink-muted: #94a1ba;
+    --color-line: #222d48;
+    --color-line-strong: #34415f;
+    --color-accent: #a5b4fc;
+    --color-accent-strong: #c7d2fe;
+    --color-accent-soft: #1b2150;
+    --color-violet: #c4b5fd;
+    --color-accent-fill: #4f46e5;
+    --color-accent-fill-hover: #4338ca;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px -8px rgb(0 0 0 / 0.5);
+    --shadow-card-hover: 0 2px 4px rgb(0 0 0 / 0.35), 0 16px 32px -16px rgb(99 102 241 / 0.35);
   }
 
   html {

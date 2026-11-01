@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Download } from 'lucide-react'
 import { homeId } from '../content/navigation.ts'
 import { profile } from '../content/profile.ts'
 import { researchInterests } from '../content/researchInterests.ts'
@@ -13,19 +13,32 @@ import { MissingField } from '../components/ui/MissingField.tsx'
 // when absent. The portrait is the likely LCP element, so it loads eagerly at high priority.
 export function Hero() {
   return (
-    <section id={homeId} aria-labelledby="home-heading" className="pt-16 pb-20 sm:pt-24 sm:pb-24 lg:pt-32 lg:pb-28">
+    <section
+      id={homeId}
+      aria-labelledby="home-heading"
+      className="relative isolate overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-24 lg:pt-32 lg:pb-28"
+    >
+      {/* Decorative background: two soft, static colour fields (no animation, no layout impact). */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -top-40 -right-32 size-[34rem] rounded-full bg-accent/10 blur-3xl dark:bg-accent/10" />
+        <div className="absolute top-1/3 -left-40 size-[28rem] rounded-full bg-violet/10 blur-3xl dark:bg-violet/[0.07]" />
+      </div>
+
       <Container className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-12">
         {profile.photo ? (
           <div className="lg:order-last lg:col-span-5">
-            <img
-              src={profile.photo.src}
-              alt={profile.photo.alt}
-              width={profile.photo.width}
-              height={profile.photo.height}
-              fetchPriority="high"
-              decoding="async"
-              className="aspect-[4/5] w-36 rounded-lg border border-line bg-surface object-cover object-top sm:w-44 lg:ml-auto lg:w-full lg:max-w-sm"
-            />
+            {/* Gradient frame; the photo keeps its own 4:5 ratio and is never stretched. */}
+            <div className="w-36 rounded-2xl bg-linear-to-br from-accent via-violet/70 to-accent/30 p-[3px] shadow-card-hover sm:w-44 lg:ml-auto lg:w-full lg:max-w-sm">
+              <img
+                src={profile.photo.src}
+                alt={profile.photo.alt}
+                width={profile.photo.width}
+                height={profile.photo.height}
+                fetchPriority="high"
+                decoding="async"
+                className="aspect-[4/5] w-full rounded-[calc(1rem-3px)] bg-surface object-cover object-top"
+              />
+            </div>
           </div>
         ) : (
           <MissingField field="photo" />
@@ -70,10 +83,23 @@ export function Hero() {
             <Button href="#publications" iconAfter={<ArrowRight aria-hidden="true" />}>
               Conference papers
             </Button>
+            {/* Rendered only when profile.cv points to an owner-approved PDF in public/cv/,
+                so there is never a dead download link. */}
+            {profile.cv && (
+              <Button href={profile.cv.path} download variant="secondary" icon={<Download aria-hidden="true" />}>
+                {profile.cv.label}
+              </Button>
+            )}
             <Button href="#projects" variant="secondary">
               Projects
             </Button>
-            <SocialLinks className="sm:ml-2" />
+          </div>
+          {/* Profiles get their own row: three buttons plus icons do not fit one line in the
+              text column, and wrapping them with the buttons looked accidental. */}
+          <div className="mt-6 flex items-center gap-4">
+            <span className="font-mono text-meta tracking-wide text-ink-muted">Profiles</span>
+            <span aria-hidden="true" className="h-px w-8 bg-line-strong" />
+            <SocialLinks />
           </div>
         </Reveal>
       </Container>

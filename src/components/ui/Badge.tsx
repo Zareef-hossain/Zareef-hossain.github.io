@@ -10,7 +10,7 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 const tones: Record<Tone, string> = {
   neutral: 'bg-surface text-ink-muted ring-line',
   accent: 'bg-accent-soft text-accent-strong ring-accent/20',
-  outline: 'bg-bg text-ink-body ring-line-strong',
+  outline: 'bg-card text-ink-body ring-line-strong',
 }
 
 /** Small mono label for metadata: venues, years, tech, status. */

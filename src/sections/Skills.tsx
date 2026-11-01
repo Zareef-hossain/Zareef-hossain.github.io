@@ -12,7 +12,8 @@ export function Skills() {
       {skillGroups.map((group) => (
         <li key={group.id} className="flex">
           <Card className="w-full">
-            <h3 className="text-lg font-semibold">
+            <h3 className="flex items-center gap-2.5 text-lg font-semibold">
+              <span aria-hidden="true" className="size-2 shrink-0 rounded-sm bg-linear-to-br from-accent to-violet" />
               {group.label}
             </h3>
             <ul className="mt-4 flex flex-wrap gap-1.5">

@@ -55,7 +55,7 @@ export interface Profile {
   /** Owner-approved public email addresses, in display order. */
   emails: readonly string[]
   links: ProfileLinks
-  /** Downloadable CV — only an owner-approved, redacted file in `public/cv/`. */
+  /** Downloadable CV — only a file in `public/cv/` the owner has explicitly approved for publication. */
   cv: Maybe<{ path: PublicPath; label: string }>
   /** Main portrait (Hero). */
   photo: Maybe<Image>

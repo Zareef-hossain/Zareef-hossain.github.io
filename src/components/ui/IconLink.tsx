@@ -17,7 +17,7 @@ export function IconLink({ href, label, icon: Icon, external = true, className }
       href={href}
       {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       className={cx(
-        'inline-flex size-11 items-center justify-center rounded-md border border-line text-ink transition-colors duration-200 hover:border-accent hover:text-accent',
+        'inline-flex size-11 items-center justify-center rounded-md border border-line bg-card text-ink transition-colors duration-200 hover:border-accent hover:text-accent',
         className,
       )}
     >

@@ -30,10 +30,17 @@ export function Projects() {
           <li key={project.id} className={cx('flex', featured && 'md:col-span-2')}>
             <Card
               as="article"
+              interactive
               id={projectAnchor(project.id)}
               aria-labelledby={`${project.id}-title`}
-              className="flex w-full scroll-mt-6 flex-col"
+              className={cx(
+                'relative flex w-full scroll-mt-6 flex-col overflow-hidden',
+                featured && 'bg-linear-to-br from-accent-soft/70 via-card to-card',
+              )}
             >
+              {featured && (
+                <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-accent via-violet/70 to-accent/20" />
+              )}
               <div className="flex items-start justify-between gap-3">
                 {project.context && <p className="font-mono text-meta text-accent">{project.context}</p>}
                 {period && <p className="shrink-0 font-mono text-meta text-ink-muted">{period}</p>}

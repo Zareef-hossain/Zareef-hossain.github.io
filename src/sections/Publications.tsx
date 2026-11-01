@@ -47,7 +47,14 @@ export function Publications() {
         const when = pub.eventDates ?? pub.year
         return (
           <li key={pub.id}>
-            <Card as="article" id={publicationAnchor(pub.id)} aria-labelledby={`${pub.id}-title`} className="scroll-mt-6">
+            <Card
+              as="article"
+              interactive
+              id={publicationAnchor(pub.id)}
+              aria-labelledby={`${pub.id}-title`}
+              className="relative scroll-mt-6 overflow-hidden"
+            >
+              <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-linear-to-b from-accent to-violet/60" />
               <div className="flex flex-wrap items-center gap-2">
                 {pub.venueType && <Badge tone="accent">{venueLabels[pub.venueType]}</Badge>}
                 {pub.year && <Badge>{pub.year}</Badge>}

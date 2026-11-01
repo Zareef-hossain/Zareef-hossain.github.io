@@ -25,7 +25,7 @@ export function Section({ id, number, title, description, children }: SectionPro
         <header className="lg:sticky lg:top-[calc(var(--header-height)+2.5rem)] lg:col-span-4 lg:self-start">
           <p aria-hidden="true" className="flex items-center gap-3 font-mono text-meta tracking-wide text-accent">
             {number}
-            <span className="h-px w-8 bg-accent/40" />
+            <span className="h-0.5 w-10 rounded-full bg-linear-to-r from-accent to-violet/30" />
           </p>
           <h2 id={headingId} className="mt-3 text-title font-semibold tracking-tight">
             {title}

@@ -27,7 +27,7 @@ export function Achievements() {
                 >
                   <span
                     aria-hidden="true"
-                    className="hidden size-11 shrink-0 items-center justify-center rounded-md bg-accent-soft text-accent sm:inline-flex"
+                    className="hidden size-11 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-accent-fill to-accent-fill-hover text-on-accent shadow-card sm:inline-flex"
                   >
                     <Award className="size-5" />
                   </span>

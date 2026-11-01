@@ -25,7 +25,7 @@ export function Contact() {
   return (
     <div className="space-y-10">
       {profile.opportunityStatement && (
-        <p className="border-l-2 border-accent pl-5 font-serif text-[1.1875rem] leading-relaxed text-ink sm:pl-6 sm:text-lead">
+        <p className="rounded-xl border border-line border-l-4 border-l-accent bg-linear-to-br from-accent-soft/80 to-card px-5 py-5 font-serif text-[1.1875rem] leading-relaxed text-ink shadow-card sm:px-7 sm:py-6 sm:text-lead">
           {profile.opportunityStatement}
         </p>
       )}

@@ -8,11 +8,33 @@
     <title>Ifreet Zareef Hossain — Research &amp; Engineering Portfolio</title>
     <meta name="description" content="Ifreet Zareef Hossain, B.Sc. Computer Science and Engineering student at American International University-Bangladesh (AIUB). Conference research work, projects and skills in machine learning, AI in healthcare and biomedical monitoring." />
     <meta name="author" content="Ifreet Zareef Hossain" />
-    <meta name="theme-color" content="#0B1B33" />
+    <meta name="theme-color" content="#FBFAF7" />
+    <!-- Apply the saved (or system) colour theme before first paint to avoid a flash.
+         Keep the key and colours in sync with src/hooks/useTheme.ts. -->
+    <script>
+      (function () {
+        var theme
+        try {
+          theme = localStorage.getItem('theme')
+        } catch (e) {}
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        }
+        var root = document.documentElement
+        root.dataset.theme = theme
+        root.style.colorScheme = theme
+        if (theme === 'dark') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0A1020')
+      })()
+    </script>
     <link rel="canonical" href="https://zareef-hossain.github.io/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- The hero portrait is the largest above-the-fold image; start fetching it before JS runs. -->
     <link rel="preload" as="image" href="/images/profile.jpg" fetchpriority="high" />
+    <!-- Latin subsets of the two web fonts, fetched alongside the JS instead of after the CSS
+         is parsed (reduces font-swap layout shift). Vite rewrites these to the hashed files that
+         the @fontsource CSS requests; preloaded fonts need crossorigin even on the same origin. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-opsz-normal.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2" />
 
     <meta property="og:type" content="profile" />
     <meta property="og:site_name" content="Ifreet Zareef Hossain" />

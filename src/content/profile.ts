@@ -26,8 +26,9 @@ export const profile: Profile = {
     scholar: null, // No Google Scholar profile confirmed.
     facebook: 'https://www.facebook.com/zareef.hossain.94',
   },
-  // A public-safe CV has not been approved: the supplied PDF contains private data.
-  cv: null,
+  // Original CV, published unchanged with the owner's explicit approval (including the personal
+  // details it contains). Byte-identical copy of the owner's file — do not edit or re-export.
+  cv: { path: '/cv/Ifreet_Zareef_Hossain_CV.pdf', label: 'Download CV' },
   photo: {
     src: '/images/profile.jpg',
     alt: 'Portrait of Ifreet Zareef Hossain wearing a blue collared shirt against a plain white background',

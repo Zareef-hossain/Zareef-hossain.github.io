@@ -2,12 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, m } from 'motion/react'
 import { Menu, X } from 'lucide-react'
 import { homeId, sections } from '../../content/navigation.ts'
-import { profile } from '../../content/profile.ts'
 import { useActiveSection } from '../../hooks/useActiveSection.ts'
 import { useScrolled } from '../../hooks/useScrolled.ts'
 import { cx } from '../../lib/cx.ts'
 import { menuTransition } from '../../lib/motion.ts'
+import { LogoMark } from '../icons/LogoMark.tsx'
 import { Container } from './Container.tsx'
+import { ThemeToggle } from './ThemeToggle.tsx'
 import { SocialLinks } from './SocialLinks.tsx'
 
 const sectionIds = sections.map((s) => s.id)
@@ -72,12 +73,14 @@ export function Navbar() {
           <a
             href={`#${homeId}`}
             onClick={() => close(false)}
-            className="inline-flex min-h-11 items-center font-serif text-[1.0625rem] font-semibold tracking-tight text-ink transition-colors hover:text-accent"
+            className="inline-flex min-h-11 items-center gap-2.5 font-serif text-[1.125rem] font-semibold tracking-tight text-ink transition-colors hover:text-accent"
           >
-            {profile.name}
+            {/* Short brand name (owner decision); the full name stays in the hero, title and SEO. */}
+            <LogoMark className="size-7 rounded-md ring-1 ring-line-strong/60" />
+            Zareef
           </a>
 
-          <nav aria-label="Primary" className="hidden lg:block">
+          <nav aria-label="Primary" className="hidden lg:ml-auto lg:block">
             <ul className="flex items-center gap-1">
               {sections.map((item) => {
                 const isActive = active === item.id
@@ -106,17 +109,21 @@ export function Navbar() {
             </ul>
           </nav>
 
-          <button
-            ref={toggleRef}
-            type="button"
-            onClick={() => (open ? close(true) : setOpen(true))}
-            aria-expanded={open}
-            aria-controls="mobile-menu"
-            className="-mr-2 inline-flex size-11 items-center justify-center rounded-md text-ink transition-colors hover:bg-surface lg:hidden"
-          >
-            {open ? <X aria-hidden="true" className="size-5" /> : <Menu aria-hidden="true" className="size-5" />}
-            <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
-          </button>
+          {/* One theme toggle for all sizes: it stays usable while the mobile menu is open. */}
+          <div className="-mr-2 flex items-center gap-1 lg:-ml-3 lg:-mr-2.5">
+            <ThemeToggle />
+            <button
+              ref={toggleRef}
+              type="button"
+              onClick={() => (open ? close(true) : setOpen(true))}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              className="inline-flex size-11 items-center justify-center rounded-md text-ink transition-colors hover:bg-surface lg:hidden"
+            >
+              {open ? <X aria-hidden="true" className="size-5" /> : <Menu aria-hidden="true" className="size-5" />}
+              <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
+            </button>
+          </div>
         </Container>
       </header>
 

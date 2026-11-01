@@ -29,7 +29,7 @@ export function ResearchInterests() {
         const related = relatedTitles(interest.relatedPublicationIds)
         return (
           <li key={interest.id} className="flex">
-            <Card as="article" aria-labelledby={`interest-${interest.id}`} className="flex w-full flex-col">
+            <Card as="article" interactive aria-labelledby={`interest-${interest.id}`} className="flex w-full flex-col">
               <p aria-hidden="true" className="font-mono text-meta text-accent">
                 {String(index + 1).padStart(2, '0')}
               </p>

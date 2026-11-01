@@ -43,14 +43,16 @@ International University-Bangladesh). Audiences, in priority order:
   `profile.emails` — two Gmail addresses and the AIUB student address, which the owner approved
   despite it containing the student ID. The privacy scan exempts only these exact strings.
 - **No CGPA/grades** in public content (owner decision): no schema field; the check rejects them.
-- **The owner's original CV is never published.** It contains a phone number, home address,
-  CGPA/GPA and referee contacts, so it is not public-safe. It is **not in the repository**: on
-  2026-11-01 it was moved, unmodified, to a private backup outside the repository, and a fresh
-  build confirmed no CV is in `public/` or `dist/`. It was never staged or committed.
-  **No public CV download exists** (`profile.cv` is `null`, so no link is rendered). Enabling
-  one requires a separately reviewed, redacted PDF (no phone, address, grades or referees) placed
-  in `public/cv/` and owner approval. Vite copies all of `public/` into `dist/`, so never put an
-  unreviewed file there.
+- **Original CV published unchanged** (owner decision, 2026-11-01): the owner explicitly
+  approved publishing the original CV as-is, **including** the personal details it contains
+  (home address, phone number, academic grades, referee contacts). It is a byte-identical copy
+  (SHA-256 verified against the owner's private backup, which stays outside the repository) at
+  `public/cv/Ifreet_Zareef_Hossain_CV.pdf`, and `profile.cv` points to it, so the Hero shows a
+  **Download CV** button [implemented locally; NOT committed or deployed]. Do not edit, redact,
+  re-export or replace the file without a new owner decision. This approval covers the PDF only:
+  the site's own text, schema and content check still exclude phone numbers, address, grades and
+  referees. CV publication and Git commit/push/deployment are separate authorizations. Vite copies
+  all of `public/` into `dist/`, so never put an unapproved file there.
 - **Paper PDFs** go in `public/papers/` only if the owner confirms the publisher permits it
   (usually the accepted manuscript, not the publisher's final version). Otherwise link the DOI.
   The `PublicationPdf` type requires `permissionConfirmed: true` [implemented].
@@ -110,7 +112,7 @@ public/                        # copied verbatim to dist/ (everything in it is p
   images/profile.jpg           # owner-supplied hero portrait (800×1005)
   images/section.jpg           # owner's original About photo (918 kB) — kept by owner decision
   images/section-optimized.jpg # same pixels re-encoded (315 kB) — used in About
-  cv/                          # empty; only a reviewed, redacted CV may go here (§2.1)
+  cv/Ifreet_Zareef_Hossain_CV.pdf # owner-approved original CV, unchanged (§2.1)
   papers/                      # [planned] only PDFs the owner may legally post
 src/
   main.tsx                     # entry; imports styles/index.css
@@ -126,12 +128,14 @@ src/
     validation.ts              # shared validator (CLI + dev UI); errors vs gaps
   components/
     icons/BrandIcons.tsx       # GitHub, LinkedIn, Facebook SVGs (lucide-static@0.468.0, ISC)
+    icons/LogoMark.tsx         # site mark (same artwork as public/favicon.svg), header brand
     dev/ContentGaps.tsx        # DEV ONLY per-section list of content gaps/errors
     layout/
       Container.tsx            # max-w-page + gutters
       Section.tsx              # numbered editorial section (sticky title column on lg)
       Reveal.tsx               # one-time fade/rise on scroll; static under reduced motion
-      Navbar.tsx               # sticky header, desktop nav, accessible mobile menu
+      Navbar.tsx               # sticky header: "[mark] Zareef" brand, nav, theme toggle, mobile menu
+      ThemeToggle.tsx          # 44px light/dark switch (sun/moon, aria-label names the action)
       Footer.tsx  SkipLink.tsx  SocialLinks.tsx
       PendingContent.tsx       # fallback for an emptied section; not rendered currently
     ui/
@@ -144,6 +148,7 @@ src/
   hooks/
     useActiveSection.ts        # IntersectionObserver scroll-spy (+ bottom-of-page rule)
     useScrolled.ts             # header border after scrolling
+    useTheme.ts                # light/dark state: saved choice → system preference; persists
   lib/
     cx.ts                      # class joiner (no clsx dependency)
     date.ts                    # formatPartialDate ("2027-09" → "September 2027"), formatPeriod
@@ -259,29 +264,49 @@ Specs live in §6 (design) and §7 (conventions); this section records *why*.
   the short form "Papers" and the Hero button reads "Conference papers" (the full heading does
   not fit the desktop nav bar or a non-wrapping button at 320px). The section id stays
   `publications`, so `#publications`, `#publication-<id>` anchors and all cross-links are unchanged.
+- **Light/dark theme** [implemented, local]: colours are CSS variables in `@theme` (light) and
+  redefined on `:root[data-theme="dark"]` in `index.css`, so every utility adapts with no
+  per-component `dark:` classes (a `dark:` variant exists for exceptions). An inline script in
+  `index.html` sets `data-theme` + `color-scheme` before first paint (no flash): saved choice in
+  `localStorage['theme']`, else `prefers-color-scheme`. `useTheme` follows live system changes
+  until the visitor chooses, persists the choice, updates `<meta name="theme-color">`, and
+  tolerates blocked storage. Keep the key and colours in the script and the hook in sync.
+- **Header brand** (owner decision, redesign): visible brand is "[mark] Zareef" (the existing
+  favicon artwork as `LogoMark`). The full name stays in the hero, `<title>`, metadata and
+  content. The previous header brand was the full name; "IZH" was never used.
+- **Download CV button** [implemented, enabled locally]: the Hero renders it only when
+  `profile.cv` is set (`download` attribute, label "Download CV" from content), and the content
+  check fails the build if the file is missing, so it can never be a dead link. Enabled with the
+  owner-approved original CV (§2.1).
 - **Shock-Sense in both Publications and Projects** (owner decision): both records use id
   `shock-sense` and link to each other (`relatedProjectId` ↔ `relatedPublicationId`).
 
 ## 6. Design system [implemented]
 
-Minimal academic-journal aesthetic: white page, deep navy type, restrained cyan accent.
-No gradients, no decorative clutter, no parallax/typing/cursor effects.
+Modern academic aesthetic (redesign, 2026-11-01): warm off-white (light) or deep navy (dark)
+page, navy/near-white type, indigo accent with a restrained violet partner. Soft gradients only
+as accents (hero background fields, portrait frame, section rules, card stripes); soft card
+shadows. No glassmorphism beyond the existing header blur, no parallax/typing/cursor effects.
 
-Colour tokens (`@theme` in `src/styles/index.css`, used as `text-ink`, `bg-surface`, etc.):
+Colour tokens (`src/styles/index.css`; used as `text-ink`, `bg-card`, etc.). All text pairs meet
+WCAG AA in both themes (verified by the contrast audit):
 
-| Token | Value | Use |
-|---|---|---|
-| `bg` | `#ffffff` | page |
-| `surface` | `#f7f9fc` | footer, subtle fills, ghost hover |
-| `ink` | `#0b1b33` | headings, primary button |
-| `ink-soft` | `#1a3156` | primary button hover |
-| `ink-body` | `#2a3a55` | body text |
-| `ink-muted` | `#5b6b85` | metadata, secondary text |
-| `line` | `#e3e8f0` | borders, dividers |
-| `line-strong` | `#cbd4e1` | button borders, hover borders |
-| `accent` | `#0e7490` | links, focus, active nav (AA on white; never use a brighter cyan for text) |
-| `accent-strong` | `#155e75` | text on `accent-soft` |
-| `accent-soft` | `#ecfeff` | tag backgrounds, selection |
+| Token | Light | Dark | Use |
+|---|---|---|---|
+| `bg` | `#fbfaf7` | `#0a1020` | page |
+| `surface` | `#f3f2ee` | `#0e1528` | footer, subtle fills, ghost hover |
+| `card` | `#ffffff` | `#131c33` | cards, secondary buttons, icon links |
+| `ink` | `#0b1b33` | `#eef2fa` | headings |
+| `ink-soft` | `#1a3156` | `#d5ddec` | (reserved) |
+| `ink-body` | `#2a3a55` | `#c3cce0` | body text |
+| `ink-muted` | `#56647c` | `#94a1ba` | metadata, secondary text |
+| `line` / `line-strong` | `#e5e3dd` / `#cfccc4` | `#222d48` / `#34415f` | borders |
+| `accent` | `#4338ca` | `#a5b4fc` | links, focus ring, active nav, labels |
+| `accent-strong` | `#3730a3` | `#c7d2fe` | text on `accent-soft` |
+| `accent-soft` | `#eef0ff` | `#1b2150` | tag backgrounds, tints, selection |
+| `violet` | `#6d28d9` | `#c4b5fd` | gradient partner only (not body text) |
+| `accent-fill` (+`-hover`) | `#4338ca` | `#4f46e5` | primary button fill, white text ≥ 6:1 |
+| `shadow-card` (+`-hover`) | soft navy | soft black | card elevation |
 
 Typography (`font-serif` / `font-sans` / `font-mono`):
 - Headings h1–h4: Source Serif 4 (optical sizing auto, `text-wrap: balance`), colour `ink`.
@@ -303,9 +328,10 @@ rule) and serif title in a 4/12 column (sticky on lg), with content in 8/12. Sta
 
 Breakpoints: Tailwind defaults. Desktop nav from `lg` (1024px); menu button below.
 
-Components: Button (`primary` navy fill, `secondary` outline, `ghost`; `icon`/`iconAfter`; all
-≥44px tall; `external` adds arrow + sr-only "opens in a new tab"), Badge (mono, ring), Card
-(rounded-lg, border-line, optional hover shadow), IconLink (44px square). One global
+Components: Button (`primary` indigo fill, `secondary` outline on card, `ghost`;
+`icon`/`iconAfter`; all ≥44px tall; `external` adds arrow + sr-only "opens in a new tab"),
+Badge (mono, ring), Card (rounded-xl, `bg-card`, `shadow-card`; `interactive` adds hover
+elevation without movement), IconLink (44px square), ThemeToggle (44px). One global
 `:focus-visible` ring in accent.
 
 Motion: one 0.45s fade + 8px rise on first view (`Reveal`), 0.2s menu fade/slide, CSS nav
@@ -440,13 +466,35 @@ update both the SHA and the trailing version comment.
   links, 4 profiles). Facebook brand icon added. Content check 0 errors / 24 gaps.
   Final audit (2026-11-01): CV notes corrected, `section-optimized.jpg` added; publications
   heading renamed to "Conference Papers & Presentations" (owner decision).
-- [ ] **M7 — Polish:** partly done — title, description, canonical, Open Graph and portrait
-  preload added. Remaining: Lighthouse audit, JSON-LD (optional), 404 page, image resizing
-  (needs approval), preload Latin font files.
+- [x] **Redesign — light/dark academic theme** (2026-11-01, implemented locally; owner review
+  pending; NOT committed): warm light + deep-navy dark palettes, theme toggle (persisted, system
+  default, no flash), "[mark] Zareef" header brand, gradient hero/portrait frame, card elevation,
+  featured-project and publication accents. Content, images, anchors and `noindex` unchanged.
+  About photo (`section-optimized.jpg`) kept.
+- [x] **CV download** (2026-11-01, implemented locally; NOT committed): owner explicitly approved
+  publishing the original CV unchanged; copied byte-for-byte into `public/cv/` (hash verified),
+  `profile.cv` set, Download CV button enabled.
+- [x] **Final UI corrections** (2026-11-01, implemented locally; NOT committed):
+  - Hero layout shift fixed. Cause: on a cold cache the web fonts arrived after the first
+    render; in the fallback serif (Georgia) the Hero name wraps to 2 lines, in Source Serif 4
+    (narrower at display sizes, optical sizing) it fits on 1, so the Hero content jumped
+    (CLS up to 0.19 at 1440px under fast-4G throttling). Fix: `index.html` preloads the two
+    Latin WOFF2 files the page actually uses (Source Serif 4 opsz, Inter wght); Vite rewrites
+    the `/node_modules/...` hrefs to the same hashed files the CSS requests (verified). After:
+    CLS 0.0000 at 1440/1024/820/390/320px, light and dark, unthrottled and fast-4G; ≤ 0.007 at
+    1.6 Mbps. Only these two font files are requested; no console warnings.
+  - Hero profile links moved to their own row ("Profiles" label, short rule, GitHub/LinkedIn
+    icons) below the three buttons; three buttons plus icons do not fit one line in the text
+    column, so they previously wrapped awkwardly.
+  - Verified: full-site 148/148, papers/anchors 37/37, audit 34/34, navigation 34/34 (each in
+    light and dark), theme 19/19, CV download 23/23 (served and downloaded file hashes match
+    the original).
+- [ ] **M7 — Polish:** partly done — title, description, canonical, Open Graph, portrait
+  preload and Latin font preloads added. Remaining: Lighthouse audit, JSON-LD (optional), 404
+  page, image resizing (needs approval).
 - [ ] **M8 — Launch** [owner decision pending]: owner content review done (approved
   2026-11-01). Still requires explicit owner authorization to commit and push (which deploys),
-  and a separate approval before removing noindex/robots. No public CV until a reviewed,
-  public-safe PDF is supplied.
+  and a separate approval before removing noindex/robots.
 
 ## 12. Pending owner input
 
@@ -457,15 +505,20 @@ decision); publications are shown without status, DOI or PDF because none is onl
 Decided (2026-11-01, owner visual review): current content and design approved; publications
 heading "Conference Papers & Presentations"; original `section.jpg` retained alongside the
 active `section-optimized.jpg`; search engine indexing stays disabled (`noindex` + robots.txt);
-no public CV download until a separately reviewed, public-safe CV is supplied.
+no public CV download at that time (superseded below).
+
+Decided (2026-11-01): the owner explicitly approved publishing the original CV unchanged,
+including its personal details. It is integrated locally (`public/cv/`, Download CV button).
 
 **Not yet authorized:** staging, commit, push, deployment and launch of the current local
 changes. A push to `main` deploys automatically, so it needs the owner's explicit authorization.
 
 Decisions [owner decision pending]:
-- Authorization to commit and push the current local changes.
+- Review of the light/dark redesign (local, uncommitted), then separate authorization to commit
+  and push it.
+- Authorization to commit and push the current local changes (redesign + CV). No commit or push
+  has occurred; CV publication approval does not authorize Git operations.
 - When to enable search engine indexing (separate approval).
-- Public CV: provide a redacted PDF (no phone, address, grades or referees), or keep it off.
 - PDF posting rights, per paper, once papers are online.
 
 Owner actions completed (2026-11-01): GitHub Pages source switched from "Deploy from a branch"
@@ -473,7 +526,6 @@ to **GitHub Actions**, and the deployment was completed by the owner (owner-repo
 independently re-verified in this document).
 
 Content still needed (the authoritative, current list is `npm run check:content`):
-- Public-safe CV PDF (optional).
 - Per publication, once online: DOI/official link; PDF only with posting permission.
 - Per project: role, personal contributions (and team contributions), repository visibility
   (public URL or private), dates where known.
