@@ -48,7 +48,7 @@ International University-Bangladesh). Audiences, in priority order:
   (home address, phone number, academic grades, referee contacts). It is a byte-identical copy
   (SHA-256 verified against the owner's private backup, which stays outside the repository) at
   `public/cv/Ifreet_Zareef_Hossain_CV.pdf`, and `profile.cv` points to it, so the Hero shows a
-  **Download CV** button [implemented locally; NOT committed or deployed]. Do not edit, redact,
+  **Download CV** button [deployed in `45f7ea0`, 2026-11-01]. Do not edit, redact,
   re-export or replace the file without a new owner decision. This approval covers the PDF only:
   the site's own text, schema and content check still exclude phone numbers, address, grades and
   referees. CV publication and Git commit/push/deployment are separate authorizations. Vite copies
@@ -109,9 +109,9 @@ Everything listed exists unless marked planned.
 .github/workflows/deploy.yml   # build on push/PR; deploy from main only
 public/                        # copied verbatim to dist/ (everything in it is published)
   favicon.svg  robots.txt
-  images/profile.jpg           # owner-supplied hero portrait (800×1005)
-  images/section.jpg           # owner's original About photo (918 kB) — kept by owner decision
-  images/section-optimized.jpg # same pixels re-encoded (315 kB) — used in About
+  images/profile.jpg           # owner-supplied formal portrait (800×1005) — used in About
+  images/section.jpg           # owner's original bench photo (918 kB) — kept by owner decision
+  images/section-optimized.jpg # same pixels re-encoded (315 kB) — used in Hero
   cv/Ifreet_Zareef_Hossain_CV.pdf # owner-approved original CV, unchanged (§2.1)
   papers/                      # [planned] only PDFs the owner may legally post
 src/
@@ -154,7 +154,7 @@ src/
     date.ts                    # formatPartialDate ("2027-09" → "September 2027"), formatPeriod
     motion.ts                  # shared transitions/easing
   sections/
-    Hero.tsx                   # #home — name, headline, degree, interest tags, CTAs, portrait
+    Hero.tsx                   # #home — name, headline, degree, interest tags, CTAs, blended photo
     About.tsx                  # #about — secondary photo, verbatim bio, academic facts (<dl>)
     ResearchInterests.tsx      # #research — numbered interests + related-paper links
     Publications.tsx           # #publications — conference paper cards (#publication-<id>)
@@ -248,17 +248,27 @@ Specs live in §6 (design) and §7 (conventions); this section records *why*.
   and back (`achievements[].relatedProjectId`).
 - **Volunteer experience** is a subsection (h3) of Awards & Achievements so the navigation stays
   unchanged.
-- **Photos** [implemented]: owner-supplied `profile.jpg` (Hero, unmodified) and `section.jpg`
-  (About). Both originals carry orientation-only EXIF (no GPS/XMP/ICC; checked 2026-11-01).
-  About uses `section-optimized.jpg`: the same 1347×900 pixels re-encoded with Chrome's JPEG
-  encoder at quality 0.88 (918 kB → 315 kB, PSNR 40.3 dB vs the original, no metadata) and is
-  the active About image. The original stays in `public/images/` unchanged and is intentionally
-  retained (owner decision, 2026-11-01); it is copied to `dist/` but not referenced by the page.
+- **Photos** [implemented]: owner-supplied `profile.jpg` (formal portrait) and `section.jpg`
+  (seated on a bench). Both originals carry orientation-only EXIF (no GPS/XMP/ICC; checked
+  2026-11-01). `section-optimized.jpg` is the same 1347×900 pixels re-encoded with Chrome's JPEG
+  encoder at quality 0.88 (918 kB → 315 kB, PSNR 40.3 dB vs the original, no metadata). The
+  original `section.jpg` stays in `public/images/` unchanged and is intentionally retained (owner
+  decision, 2026-11-01); it is copied to `dist/` but not referenced by the page.
   Do not delete, rename, move or re-encode any of the three image files.
-  Width/height attributes reserve space; `object-cover` crops without distortion. The Hero
-  portrait is eager with `fetchpriority="high"` plus a `<link rel="preload">` in `index.html`;
-  the About photo is `loading="lazy"` (Chrome may still fetch it early because it is near the
-  fold).
+- **Photo swap + Hero blending** (owner decision, 2026-11-01) [implemented locally; NOT
+  committed]: Hero uses `section-optimized.jpg`, About uses `profile.jpg`. **The owner's face and
+  appearance must never be altered**: the exact JPG files are shown as-is, with no AI-generated or
+  edited images, no CSS filters and no recolouring. Blending is non-destructive CSS only: the
+  `.hero-photo` mask (`index.css`) fades the photo's edges to transparent so the page background
+  (cream or navy) shows through; fades stay clear of the face. One `<img>`, two compositions:
+  below `lg` a square/16:10 banner above the text (bottom and side fades); from `lg` an
+  out-of-flow panel at the right edge (44% wide, full Hero height, long eased fade towards the
+  text, short top/bottom fades) beside the 7-column text, so text never sits on the photo.
+  `object-position: 64% 20%` keeps the face in frame at every width. About shows the formal
+  portrait (4:5, gradient frame) floated beside the bio from `sm`, above it on phones.
+  Width/height attributes reserve space; `object-cover` crops without distortion. The Hero photo
+  is eager with `fetchpriority="high"` plus a matching `<link rel="preload">` in `index.html`; the
+  About portrait is `loading="lazy"`. `og:image` stays `profile.jpg` (unchanged SEO metadata).
 - **Publications section wording** (owner decision, 2026-11-01): the visible heading is
   **Conference Papers & Presentations**, because the papers are not yet online. The nav label is
   the short form "Papers" and the Hero button reads "Conference papers" (the full heading does
@@ -285,7 +295,7 @@ Specs live in §6 (design) and §7 (conventions); this section records *why*.
 
 Modern academic aesthetic (redesign, 2026-11-01): warm off-white (light) or deep navy (dark)
 page, navy/near-white type, indigo accent with a restrained violet partner. Soft gradients only
-as accents (hero background fields, portrait frame, section rules, card stripes); soft card
+as accents (hero background fields, hero photo fade, About portrait frame, section rules, card stripes); soft card
 shadows. No glassmorphism beyond the existing header blur, no parallax/typing/cursor effects.
 
 Colour tokens (`src/styles/index.css`; used as `text-ink`, `bg-card`, etc.). All text pairs meet
@@ -466,15 +476,14 @@ update both the SHA and the trailing version comment.
   links, 4 profiles). Facebook brand icon added. Content check 0 errors / 24 gaps.
   Final audit (2026-11-01): CV notes corrected, `section-optimized.jpg` added; publications
   heading renamed to "Conference Papers & Presentations" (owner decision).
-- [x] **Redesign — light/dark academic theme** (2026-11-01, implemented locally; owner review
-  pending; NOT committed): warm light + deep-navy dark palettes, theme toggle (persisted, system
+- [x] **Redesign — light/dark academic theme** (2026-11-01, deployed in `45f7ea0`): warm light + deep-navy dark palettes, theme toggle (persisted, system
   default, no flash), "[mark] Zareef" header brand, gradient hero/portrait frame, card elevation,
   featured-project and publication accents. Content, images, anchors and `noindex` unchanged.
   About photo (`section-optimized.jpg`) kept.
-- [x] **CV download** (2026-11-01, implemented locally; NOT committed): owner explicitly approved
+- [x] **CV download** (2026-11-01, deployed in `45f7ea0`): owner explicitly approved
   publishing the original CV unchanged; copied byte-for-byte into `public/cv/` (hash verified),
   `profile.cv` set, Download CV button enabled.
-- [x] **Final UI corrections** (2026-11-01, implemented locally; NOT committed):
+- [x] **Final UI corrections** (2026-11-01, deployed in `45f7ea0`):
   - Hero layout shift fixed. Cause: on a cold cache the web fonts arrived after the first
     render; in the fallback serif (Georgia) the Hero name wraps to 2 lines, in Source Serif 4
     (narrower at display sizes, optical sizing) it fits on 1, so the Hero content jumped
@@ -489,6 +498,12 @@ update both the SHA and the trailing version comment.
   - Verified: full-site 148/148, papers/anchors 37/37, audit 34/34, navigation 34/34 (each in
     light and dark), theme 19/19, CV download 23/23 (served and downloaded file hashes match
     the original).
+- [x] **Hero/About photo swap with CSS blending** (2026-11-01, implemented locally; owner review
+  pending; NOT committed): see §5 "Photo swap + Hero blending". Verified: images byte-identical
+  (no edits), no text/photo overlap and face in frame at 1440/1024/820/390/320px, CLS 0.0000 at
+  all widths in both themes (cold cache, fast-4G), LCP is the Hero photo (median ≈1.1 s at
+  1440px, ≈1.0 s at 390px under fast-4G, vs ≈1.4 s for the deployed design). All suites pass
+  in light and dark.
 - [ ] **M7 — Polish:** partly done — title, description, canonical, Open Graph, portrait
   preload and Latin font preloads added. Remaining: Lighthouse audit, JSON-LD (optional), 404
   page, image resizing (needs approval).
@@ -508,16 +523,19 @@ active `section-optimized.jpg`; search engine indexing stays disabled (`noindex`
 no public CV download at that time (superseded below).
 
 Decided (2026-11-01): the owner explicitly approved publishing the original CV unchanged,
-including its personal details. It is integrated locally (`public/cv/`, Download CV button).
+including its personal details. Redesign, themes and CV download were committed and deployed
+as `45f7ea0` (2026-11-01, owner-authorized).
 
-**Not yet authorized:** staging, commit, push, deployment and launch of the current local
-changes. A push to `main` deploys automatically, so it needs the owner's explicit authorization.
+**Not yet authorized:** staging, commit, push and deployment of the Hero/About photo swap
+(local only). A push to `main` deploys automatically, so it needs the owner's explicit
+authorization.
 
 Decisions [owner decision pending]:
-- Review of the light/dark redesign (local, uncommitted), then separate authorization to commit
-  and push it.
-- Authorization to commit and push the current local changes (redesign + CV). No commit or push
-  has occurred; CV publication approval does not authorize Git operations.
+- Review of the Hero/About photo swap (local, uncommitted), then separate authorization to
+  commit and push it.
+- Research files, Reroute Agro links and hackathon gallery: the owner is organizing these
+  separately (untracked `public/projects/`, `public/research/`); not added to the site yet.
+  Vite copies all of `public/` into `dist/`, so they must not be committed until approved.
 - When to enable search engine indexing (separate approval).
 - PDF posting rights, per paper, once papers are online.
 

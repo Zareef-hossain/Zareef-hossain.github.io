@@ -9,14 +9,14 @@ import { Badge } from '../components/ui/Badge.tsx'
 import { Button } from '../components/ui/Button.tsx'
 import { MissingField } from '../components/ui/MissingField.tsx'
 
-// Hero built from confirmed content only. The headline, interest tags and portrait are omitted
-// when absent. The portrait is the likely LCP element, so it loads eagerly at high priority.
+// Hero built from confirmed content only. The headline, interest tags and photo are omitted
+// when absent. The photo is the likely LCP element, so it loads eagerly at high priority.
 export function Hero() {
   return (
     <section
       id={homeId}
       aria-labelledby="home-heading"
-      className="relative isolate overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-24 lg:pt-32 lg:pb-28"
+      className="relative isolate overflow-hidden pb-20 sm:pb-24 lg:pt-32 lg:pb-28"
     >
       {/* Decorative background: two soft, static colour fields (no animation, no layout impact). */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
@@ -24,25 +24,27 @@ export function Hero() {
         <div className="absolute top-1/3 -left-40 size-[28rem] rounded-full bg-violet/10 blur-3xl dark:bg-violet/[0.07]" />
       </div>
 
-      <Container className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-12">
-        {profile.photo ? (
-          <div className="lg:order-last lg:col-span-5">
-            {/* Gradient frame; the photo keeps its own 4:5 ratio and is never stretched. */}
-            <div className="w-36 rounded-2xl bg-linear-to-br from-accent via-violet/70 to-accent/30 p-[3px] shadow-card-hover sm:w-44 lg:ml-auto lg:w-full lg:max-w-sm">
-              <img
-                src={profile.photo.src}
-                alt={profile.photo.alt}
-                width={profile.photo.width}
-                height={profile.photo.height}
-                fetchPriority="high"
-                decoding="async"
-                className="aspect-[4/5] w-full rounded-[calc(1rem-3px)] bg-surface object-cover object-top"
-              />
-            </div>
-          </div>
-        ) : (
-          <MissingField field="photo" />
-        )}
+      {/* One image, two compositions: a full-width banner above the text on small screens, and a
+          full-height panel at the right edge from lg (out of flow, beside the 7-column text, so it
+          never sits under the text). .hero-photo fades its edges into the page background with
+          CSS masks; the photo itself is shown unaltered (no filters, no edits to the file). */}
+      {profile.photo ? (
+        <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-[44%]">
+          <img
+            src={profile.photo.src}
+            alt={profile.photo.alt}
+            width={profile.photo.width}
+            height={profile.photo.height}
+            fetchPriority="high"
+            decoding="async"
+            className="hero-photo aspect-square max-h-[34rem] w-full object-cover object-[64%_20%] sm:aspect-[16/10] lg:aspect-auto lg:h-full lg:max-h-none"
+          />
+        </div>
+      ) : (
+        <MissingField field="photo" />
+      )}
+
+      <Container className="grid pt-4 sm:pt-6 lg:grid-cols-12 lg:gap-12 lg:pt-0">
         <Reveal className="max-w-3xl lg:col-span-7">
           <p className="font-mono text-meta tracking-wide text-accent">Research &amp; Engineering Portfolio</p>
           <h1 id="home-heading" className="mt-5 text-display font-semibold tracking-tight">

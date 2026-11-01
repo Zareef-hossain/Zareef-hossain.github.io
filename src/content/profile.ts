@@ -29,17 +29,19 @@ export const profile: Profile = {
   // Original CV, published unchanged with the owner's explicit approval (including the personal
   // details it contains). Byte-identical copy of the owner's file — do not edit or re-export.
   cv: { path: '/cv/Ifreet_Zareef_Hossain_CV.pdf', label: 'Download CV' },
+  // Hero (owner decision: photos swapped). Same 1347×900 pixels as the owner's original
+  // section.jpg, re-encoded (918 kB → 315 kB). Blended with CSS masks only; never edit the file.
   photo: {
-    src: '/images/profile.jpg',
-    alt: 'Portrait of Ifreet Zareef Hossain wearing a blue collared shirt against a plain white background',
-    width: 800,
-    height: 1005,
-  },
-  // Same 1347×900 pixels as the owner's original section.jpg, re-encoded (918 kB → 315 kB).
-  aboutPhoto: {
     src: '/images/section-optimized.jpg',
     alt: 'Ifreet Zareef Hossain seated on an outdoor bench in a light blue shirt, wearing an event lanyard',
     width: 1347,
     height: 900,
+  },
+  // About: the formal portrait.
+  aboutPhoto: {
+    src: '/images/profile.jpg',
+    alt: 'Portrait of Ifreet Zareef Hossain wearing a blue collared shirt against a plain white background',
+    width: 800,
+    height: 1005,
   },
 }

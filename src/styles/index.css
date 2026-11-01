@@ -138,3 +138,52 @@
     }
   }
 }
+
+@layer components {
+  /* Hero photo: its edges fade into whatever is behind it (the page background in either
+     theme), so there is no hard rectangle. Masks only change opacity at the edges; the photo
+     itself is never filtered or recoloured. Fades stay clear of the face (at ~19% from the top,
+     ~64% from the left of the original). */
+  /* Eased (non-linear) stops avoid the visible band a straight linear fade leaves. */
+  .hero-photo {
+    /* Small screens: banner above the text, fading out at the bottom and the side edges. */
+    mask-image:
+      linear-gradient(
+        to bottom,
+        rgb(0 0 0 / 0.55),
+        #000 6%,
+        #000 56%,
+        rgb(0 0 0 / 0.7) 70%,
+        rgb(0 0 0 / 0.3) 85%,
+        transparent
+      ),
+      linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+    mask-composite: intersect;
+  }
+  @media (width >= 64rem) {
+    .hero-photo {
+      /* Beside the text: a long fade towards the text column, short fades top and bottom. */
+      mask-image:
+        linear-gradient(
+          to right,
+          transparent,
+          rgb(0 0 0 / 0.05) 8%,
+          rgb(0 0 0 / 0.18) 16%,
+          rgb(0 0 0 / 0.4) 25%,
+          rgb(0 0 0 / 0.68) 34%,
+          rgb(0 0 0 / 0.9) 43%,
+          #000 52%
+        ),
+        linear-gradient(
+          to bottom,
+          transparent,
+          rgb(0 0 0 / 0.45) 4%,
+          rgb(0 0 0 / 0.85) 8%,
+          #000 12%,
+          #000 78%,
+          rgb(0 0 0 / 0.55) 90%,
+          transparent
+        );
+    }
+  }
+}

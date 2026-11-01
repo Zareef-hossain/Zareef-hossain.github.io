@@ -71,23 +71,24 @@ export function About() {
 
   return (
     <div className="space-y-10">
-      {profile.aboutPhoto ? (
-        <figure className="overflow-hidden rounded-xl border border-line bg-surface shadow-card">
-          <img
-            src={profile.aboutPhoto.src}
-            alt={profile.aboutPhoto.alt}
-            width={profile.aboutPhoto.width}
-            height={profile.aboutPhoto.height}
-            loading="lazy"
-            decoding="async"
-            className="aspect-[4/3] w-full object-cover object-[62%_center] sm:aspect-[3/2]"
-          />
-        </figure>
-      ) : (
-        <MissingField field="aboutPhoto" />
-      )}
-
-      <div className="max-w-prose space-y-5">
+      {/* The portrait floats beside the bio from sm, so the text wraps around it and then uses
+          the full width; on phones it sits above the text. flow-root contains the float. */}
+      <div className="max-w-prose flow-root space-y-5">
+        {profile.aboutPhoto ? (
+          <figure className="mb-6 w-44 rounded-2xl bg-linear-to-br from-accent via-violet/70 to-accent/30 p-[3px] shadow-card-hover sm:float-right sm:mb-4 sm:ml-8 sm:w-52 lg:w-56">
+            <img
+              src={profile.aboutPhoto.src}
+              alt={profile.aboutPhoto.alt}
+              width={profile.aboutPhoto.width}
+              height={profile.aboutPhoto.height}
+              loading="lazy"
+              decoding="async"
+              className="aspect-[4/5] w-full rounded-[calc(1rem-3px)] bg-surface object-cover object-top"
+            />
+          </figure>
+        ) : (
+          <MissingField field="aboutPhoto" />
+        )}
         {profile.bio.map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
         ))}
